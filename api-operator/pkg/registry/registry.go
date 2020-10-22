@@ -19,6 +19,8 @@ package registry
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	operatorConfig "github.com/wso2/k8s-api-operator/api-operator/pkg/config"
 	"github.com/wso2/k8s-api-operator/api-operator/pkg/k8s"
 	"github.com/wso2/k8s-api-operator/api-operator/pkg/maps"
@@ -31,7 +33,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"strings"
 )
 
 var logger = log.Log.WithName("registry")
@@ -64,10 +65,16 @@ var dockerImage Image
 var registryConfigs = map[Type]func(repoName string, imgName string, tag string) *Config{}
 
 // SetRegistry sets the registry type, repository and image
-func SetRegistry(client *client.Client, namespace string, img Image) error {
+func SetRegistry(client *client.Client, namespace string, img Image, pullSecret string) error {
 	logger.Info("Setting registry type", "image", img)
 	dockerImage = img
 
+	if pullSecret != "" {
+		config := GetConfig()
+		config.ImagePullSecrets = []corev1.LocalObjectReference{
+			{Name: pullSecret},
+		}
+	}
 	return copyConfigVolumes(client, namespace)
 }
 

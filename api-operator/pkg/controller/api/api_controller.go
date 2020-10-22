@@ -427,7 +427,7 @@ func (r *ReconcileAPI) Reconcile(request reconcile.Request) (reconcile.Result, e
 		mgwDockerImage.Tag = mgwDockerImage.Tag + "-" + instance.Spec.UpdateTimeStamp
 	}
 
-	errReg := registry.SetRegistry(&r.client, userNamespace, mgwDockerImage)
+	errReg := registry.SetRegistry(&r.client, userNamespace, mgwDockerImage, controlConfigData[imagePullSecretNameConst])
 	if errReg != nil {
 		reqLogger.Error(errReg, "Error setting docker registry", "docker_image", mgwDockerImage)
 		return reconcile.Result{}, errReg

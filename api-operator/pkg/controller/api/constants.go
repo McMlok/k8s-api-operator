@@ -16,16 +16,17 @@
 package api
 
 const (
-	mgwToolkitImgConst  = "mgwToolkitImg"
-	mgwRuntimeImgConst  = "mgwRuntimeImg"
-	kanikoArguments     = "kanikoArguments"
-	registryTypeConst   = "registryType"
-	repositoryNameConst = "repositoryName"
-	controllerConfName  = "controller-config"
-	ingressConfigs      = "ingress-configs"
-	openShiftConfigs    = "route-configs"
-	dockerRegConfigs    = "docker-registry-config"
-	kanikoArgsConfigs   = "kaniko-arguments"
+	mgwToolkitImgConst       = "mgwToolkitImg"
+	mgwRuntimeImgConst       = "mgwRuntimeImg"
+	kanikoArguments          = "kanikoArguments"
+	registryTypeConst        = "registryType"
+	repositoryNameConst      = "repositoryName"
+	controllerConfName       = "controller-config"
+	ingressConfigs           = "ingress-configs"
+	openShiftConfigs         = "route-configs"
+	dockerRegConfigs         = "docker-registry-config"
+	kanikoArgsConfigs        = "kaniko-arguments"
+	imagePullSecretNameConst = "imagePullSecretName"
 
 	operatorModeConst             = "operatorMode"
 	istioMode                     = "Istio"
