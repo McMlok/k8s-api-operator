@@ -18,6 +18,7 @@ package registry
 
 import (
 	"fmt"
+
 	"github.com/wso2/k8s-api-operator/api-operator/pkg/registry/utils"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -36,7 +37,7 @@ var dockerHub = &Config{
 	},
 	Volumes: []corev1.Volume{
 		{
-			Name: "reg-secret-volume",
+			Name: utils.DockerRegCredVolumeName,
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
 					SecretName: utils.DockerRegCredSecret,

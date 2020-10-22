@@ -18,6 +18,8 @@ package kaniko
 
 import (
 	"context"
+	"strings"
+
 	"github.com/golang/glog"
 	wso2v1alpha1 "github.com/wso2/k8s-api-operator/api-operator/pkg/apis/wso2/v1alpha1"
 	"github.com/wso2/k8s-api-operator/api-operator/pkg/registry"
@@ -27,13 +29,14 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"strings"
 )
 
 var logJob = log.Log.WithName("kaniko.job")
 
 const (
-	kanikoImgConst = "kanikoImg"
+	kanikoImgConst           = "kanikoImg"
+	imagePushSecretNameConst = "imagePushSecretName"
+	dockerRegCredVolumeName  = "reg-secret-volume"
 )
 
 // Job returns a kaniko job with mounted volumes
@@ -45,9 +48,14 @@ func Job(api *wso2v1alpha1.API, controlConfigData map[string]string, kanikoArgs 
 	}
 
 	regConfig := registry.GetConfig()
+	pushSecret := controlConfigData[imagePushSecretNameConst]
+	if pushSecret != "" {
+		regConfig.Volumes[0].VolumeSource.Secret.SecretName = pushSecret
+	}
 	AddVolumes(&regConfig.Volumes, &regConfig.VolumeMounts)
 
 	kanikoImg := controlConfigData[kanikoImgConst]
+
 	args := append([]string{
 		"--dockerfile=/usr/wso2/dockerfile/Dockerfile",
 		"--context=/usr/wso2/",
