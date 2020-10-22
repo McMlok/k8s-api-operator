@@ -4,10 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	operatorConfig "github.com/wso2/k8s-api-operator/api-operator/pkg/config"
-	v1 "k8s.io/api/core/v1"
 	"os"
 	"runtime"
+
+	v1 "k8s.io/api/core/v1"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
