@@ -47,7 +47,7 @@ func Job(api *wso2v1alpha1.API, controlConfigData map[string]string, kanikoArgs 
 		jobName = jobName + "-" + api.Spec.UpdateTimeStamp
 	}
 
-	regConfig := registry.GetConfig()
+	regConfig := registry.GetPushConfig()
 	pushSecret := controlConfigData[imagePushSecretNameConst]
 	if pushSecret != "" {
 		regConfig.Volumes[0].VolumeSource.Secret.SecretName = pushSecret

@@ -16,17 +16,19 @@
 package api
 
 const (
-	mgwToolkitImgConst       = "mgwToolkitImg"
-	mgwRuntimeImgConst       = "mgwRuntimeImg"
-	kanikoArguments          = "kanikoArguments"
-	registryTypeConst        = "registryType"
-	repositoryNameConst      = "repositoryName"
-	wso2NameSpaceConst       = "wso2-system"
-	controllerConfName       = "controller-config"
-	ingressConfigs           = "ingress-configs"
-	openShiftConfigs         = "route-configs"
-	dockerRegConfigs         = "docker-registry-config"
-	kanikoArgsConfigs        = "kaniko-arguments"
+	mgwToolkitImgConst  = "mgwToolkitImg"
+	mgwRuntimeImgConst  = "mgwRuntimeImg"
+	kanikoArguments     = "kanikoArguments"
+	registryTypeConst   = "registryType"
+	repositoryNameConst = "repositoryName"
+	wso2NameSpaceConst  = "wso2-system"
+	controllerConfName  = "controller-config"
+	ingressConfigs      = "ingress-configs"
+	openShiftConfigs    = "route-configs"
+	dockerRegConfigs    = "docker-registry-config"
+	kanikoArgsConfigs   = "kaniko-arguments"
+
+	dockerPushRegName        = "pushRegistryName"
 	imagePullSecretNameConst = "imagePullSecretName"
 
 	operatorModeConst             = "operatorMode"
