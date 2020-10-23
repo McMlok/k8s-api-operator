@@ -26,6 +26,7 @@ const (
 	openShiftConfigs         = "route-configs"
 	dockerRegConfigs         = "docker-registry-config"
 	kanikoArgsConfigs        = "kaniko-arguments"
+	dockerPushRegName        = "pushRegistryName"
 	imagePullSecretNameConst = "imagePullSecretName"
 
 	operatorModeConst             = "operatorMode"

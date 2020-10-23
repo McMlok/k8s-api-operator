@@ -62,14 +62,19 @@ type Config struct {
 
 // registry details
 var dockerImage Image
+var dockerPushImage Image
 var registryConfigs = map[Type]func(repoName string, imgName string, tag string) *Config{}
 
 // SetRegistry sets the registry type, repository and image
-func SetRegistry(client *client.Client, namespace string, img Image, pullSecretName string) error {
+func SetRegistry(client *client.Client, namespace string, img Image, pullSecretName string, isForPush bool) error {
 	logger.Info("Setting registry type", "image", img)
-	dockerImage = img
+	if isForPush {
+		dockerPushImage = img
+	} else {
+		dockerImage = img
+	}
 
-	if pullSecret != "" {
+	if pullSecretName != "" {
 		config := GetConfig()
 		config.ImagePullSecrets = []corev1.LocalObjectReference{
 			{Name: pullSecretName},
@@ -81,6 +86,11 @@ func SetRegistry(client *client.Client, namespace string, img Image, pullSecretN
 // GetConfig returns the registry config
 func GetConfig() *Config {
 	return registryConfigs[dockerImage.RegistryType](dockerImage.RepositoryName, dockerImage.Name, dockerImage.Tag)
+}
+
+// GetConfig returns the push registry config
+func GetPushConfig() *Config {
+	return registryConfigs[dockerImage.RegistryType](dockerPushImage.RepositoryName, dockerPushImage.Name, dockerPushImage.Tag)
 }
 
 // IsRegistryType validates the given regType is a valid registry type
