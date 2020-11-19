@@ -17,6 +17,7 @@
 package mgw
 
 import (
+	"github.com/wso2/k8s-api-operator/api-operator/pkg/config"
 	"github.com/wso2/k8s-api-operator/api-operator/pkg/k8s"
 	"github.com/wso2/k8s-api-operator/api-operator/pkg/kaniko"
 	"github.com/wso2/k8s-api-operator/api-operator/pkg/str"
@@ -26,17 +27,14 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"strconv"
-	"strings"
 )
 
 var logConf = log.Log.WithName("mgw.config")
 
 const (
-	apimConfName       = "apim-config"
-	apimSecretName     = "apim-secret"
-	mgwConfMustache    = "mgw-conf-mustache"
-	wso2NameSpaceConst = "wso2-system"
+	apimConfName    = "apim-config"
+	apimSecretName  = "apim-secret"
+	mgwConfMustache = "mgw-conf-mustache"
 
 	mgwConfGoTmpl      = "mgwConf.gotmpl"
 	mgwConfSecretConst = "mgw-conf"
@@ -61,10 +59,12 @@ const (
 	enabledGlobalTMEventPublishingConst = "enabledGlobalTMEventPublishing"
 	jmsConnectionProviderConst          = "jmsConnectionProvider"
 	throttleEndpointConst               = "throttleEndpoint"
+	throttlingRecieverURLConst          = "throttlingRecieverUrl"
+	throttlingAuthURLConst              = "throttlingAuthUrl"
 	enableRealtimeMessageRetrievalConst = "enableRealtimeMessageRetrieval"
 	enableRequestValidationConst        = "enableRequestValidation"
 	enableResponseValidationConst       = "enableResponseValidation"
-	enabledEventhub						= "enabledEventhub"
+	enabledEventhub                     = "enabledEventhub"
 	logLevelConst                       = "logLevel"
 	httpPortConst                       = "httpPort"
 	httpsPortConst                      = "httpsPort"
@@ -126,6 +126,8 @@ type Configuration struct {
 	ThrottleEndpoint               string
 	ApimUsername                   string
 	ApimPassword                   string
+	ThrottlingRecieverURL          string
+	ThrottlingAuthURL              string
 
 	// token revocation
 	EnableRealtimeMessageRetrieval string
@@ -133,7 +135,7 @@ type Configuration struct {
 	// validation
 	EnableRequestValidation  string
 	EnableResponseValidation string
-	EnabledEventhub			 string
+	EnabledEventhub          string
 
 	//basic authentication
 	BasicUsername string
@@ -241,6 +243,8 @@ var Configs = &Configuration{
 	ThrottleEndpoint:               "wso2apim.wso2:32001",
 	ApimUsername:                   "admin",
 	ApimPassword:                   "admin",
+	ThrottlingRecieverURL:          "wso2apim.wso2:9611",
+	ThrottlingAuthURL:              "wso2apim.wso2:9611",
 
 	// token revocation
 	EnableRealtimeMessageRetrieval: "false",
@@ -248,7 +252,7 @@ var Configs = &Configuration{
 	// validation
 	EnableRequestValidation:  "false",
 	EnableResponseValidation: "false",
-	EnabledEventhub: 		  "false",
+	EnabledEventhub:          "false",
 
 	//basic authentication
 	BasicUsername: "admin",
@@ -303,7 +307,7 @@ var Configs = &Configuration{
 func SetApimConfigs(client *client.Client) error {
 	// get data from APIM configmap
 	apimConfig := k8s.NewConfMap()
-	errApim := k8s.Get(client, types.NamespacedName{Namespace: wso2NameSpaceConst, Name: apimConfName}, apimConfig)
+	errApim := k8s.Get(client, types.NamespacedName{Namespace: config.SystemNamespace, Name: apimConfName}, apimConfig)
 
 	if errApim != nil {
 		if errors.IsNotFound(errApim) {
@@ -315,7 +319,7 @@ func SetApimConfigs(client *client.Client) error {
 	}
 
 	apimSecret := k8s.NewSecret()
-	errorApimSecret := k8s.Get(client, types.NamespacedName{Namespace: wso2NameSpaceConst, Name: apimSecretName}, apimSecret)
+	errorApimSecret := k8s.Get(client, types.NamespacedName{Namespace: config.SystemNamespace, Name: apimSecretName}, apimSecret)
 
 	if errorApimSecret != nil {
 		if errors.IsNotFound(errorApimSecret) {
@@ -332,6 +336,8 @@ func SetApimConfigs(client *client.Client) error {
 	Configs.ThrottleEndpoint = apimConfig.Data[throttleEndpointConst]
 	Configs.ApimUsername = string(apimSecret.Data["username"])
 	Configs.ApimPassword = string(apimSecret.Data["password"])
+	Configs.ThrottlingRecieverURL = apimConfig.Data[throttlingRecieverURLConst]
+	Configs.ThrottlingAuthURL = apimConfig.Data[throttlingAuthURLConst]
 	Configs.EnableRealtimeMessageRetrieval = apimConfig.Data[enableRealtimeMessageRetrievalConst]
 	Configs.EnableRequestValidation = apimConfig.Data[enableRequestValidationConst]
 	Configs.EnableResponseValidation = apimConfig.Data[enableResponseValidationConst]
@@ -431,7 +437,7 @@ func SetApimConfigs(client *client.Client) error {
 func ApplyConfFile(client *client.Client, userNamespace, apiName string, owner *[]metav1.OwnerReference) error {
 	// retrieving the MGW template configmap
 	templateConfMap := k8s.NewConfMap()
-	errConf := k8s.Get(client, types.NamespacedName{Namespace: wso2NameSpaceConst, Name: mgwConfMustache}, templateConfMap)
+	errConf := k8s.Get(client, types.NamespacedName{Namespace: config.SystemNamespace, Name: mgwConfMustache}, templateConfMap)
 	if errConf != nil {
 		logConf.Error(errConf, "Error retrieving the MGW template configmap")
 		return errConf
