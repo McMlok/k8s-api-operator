@@ -18,6 +18,7 @@ package analytics
 
 import (
 	"errors"
+
 	"github.com/wso2/k8s-api-operator/api-operator/pkg/cert"
 	"github.com/wso2/k8s-api-operator/api-operator/pkg/config"
 	"github.com/wso2/k8s-api-operator/api-operator/pkg/k8s"

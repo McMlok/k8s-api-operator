@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	operatorConfig "github.com/wso2/k8s-api-operator/api-operator/pkg/config"
 	v1 "k8s.io/api/core/v1"
 	"os"
 	"runtime"

@@ -19,10 +19,11 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/wso2/k8s-api-operator/api-operator/pkg/config"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/wso2/k8s-api-operator/api-operator/pkg/config"
 
 	"github.com/wso2/k8s-api-operator/api-operator/pkg/analytics"
 	"github.com/wso2/k8s-api-operator/api-operator/pkg/apim"
