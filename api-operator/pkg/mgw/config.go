@@ -193,6 +193,8 @@ type JwtTokenConfig struct {
 	Audience             string
 	ValidateSubscription bool
 	AudiencePresent      bool
+	JwksPresent          bool
+	JwksURL              string
 }
 
 type APIKeyTokenConfig struct {
@@ -227,6 +229,7 @@ var Configs = &Configuration{
 			Audience:             "http://org.wso2.apimgt/gateway",
 			ValidateSubscription: false,
 			AudiencePresent:      false,
+			JwksPresent:          false,
 		},
 	},
 
