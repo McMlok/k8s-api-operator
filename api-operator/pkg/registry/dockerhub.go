@@ -25,40 +25,38 @@ import (
 
 const DockerHub Type = "DOCKER_HUB"
 
-// Docker Hub configs
-var dockerHub = &Config{
-	RegistryType: DockerHub,
-	VolumeMounts: []corev1.VolumeMount{
-		{
-			Name:      "reg-secret-volume",
-			MountPath: "/kaniko/.docker/",
-			ReadOnly:  true,
+func getDockerHubConfigFunc(repoName string, imgName string, tag string) *Config {
+	// Docker Hub configs
+	return &Config{
+		RegistryType: DockerHub,
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "reg-secret-volume",
+				MountPath: "/kaniko/.docker/",
+				ReadOnly:  true,
+			},
 		},
-	},
-	Volumes: []corev1.Volume{
-		{
-			Name: utils.DockerRegCredVolumeName,
-			VolumeSource: corev1.VolumeSource{
-				Secret: &corev1.SecretVolumeSource{
-					SecretName: utils.DockerRegCredSecret,
-					Items: []corev1.KeyToPath{
-						{
-							Key:  utils.DockerConfigKeyConst,
-							Path: "config.json",
+		Volumes: []corev1.Volume{
+			{
+				Name: utils.DockerRegCredVolumeName,
+				VolumeSource: corev1.VolumeSource{
+					Secret: &corev1.SecretVolumeSource{
+						SecretName: utils.DockerRegCredSecret,
+						Items: []corev1.KeyToPath{
+							{
+								Key:  utils.DockerConfigKeyConst,
+								Path: "config.json",
+							},
 						},
 					},
 				},
 			},
 		},
-	},
-	ImagePullSecrets: []corev1.LocalObjectReference{
-		{Name: utils.DockerRegCredSecret},
-	},
-}
-
-func getDockerHubConfigFunc(repoName string, imgName string, tag string) *Config {
-	dockerHub.ImagePath = fmt.Sprintf("%s/%s:%s", repoName, imgName, tag)
-	return dockerHub
+		ImagePullSecrets: []corev1.LocalObjectReference{
+			{Name: utils.DockerRegCredSecret},
+		},
+		ImagePath: fmt.Sprintf("%s/%s:%s", repoName, imgName, tag),
+	}
 }
 
 func init() {

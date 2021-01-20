@@ -443,7 +443,7 @@ func (r *ReconcileAPI) Reconcile(request reconcile.Request) (reconcile.Result, e
 		mgwDockerImage.Tag = mgwDockerImage.Tag + "-" + instance.Spec.UpdateTimeStamp
 	}
 
-	errReg := registry.SetRegistry(&r.client, userNamespace, mgwDockerImage, controlConfigData[imagePullSecretNameConst], false)
+	errReg := registry.SetRegistry(&r.client, userNamespace, mgwDockerImage)
 	if errReg != nil {
 		reqLogger.Error(errReg, "Error setting docker registry", "docker_image", mgwDockerImage)
 		return reconcile.Result{}, errReg
@@ -454,7 +454,7 @@ func (r *ReconcileAPI) Reconcile(request reconcile.Request) (reconcile.Result, e
 		mgwDockerImage.RegistryType = registry.Type(dockerPushRegistryConf.Data[registryTypeConst])
 		mgwDockerImage.RepositoryName = dockerPushRegistryConf.Data[repositoryNameConst]
 
-		errReg := registry.SetRegistry(&r.client, userNamespace, mgwDockerImage, controlConfigData[imagePullSecretNameConst], true)
+		errReg := registry.SetRegistry(&r.client, userNamespace, mgwDockerImage)
 		if errReg != nil {
 			reqLogger.Error(errReg, "Error setting docker push registry", "docker_image", mgwDockerImage)
 			return reconcile.Result{}, errReg
@@ -468,7 +468,7 @@ func (r *ReconcileAPI) Reconcile(request reconcile.Request) (reconcile.Result, e
 			"Skipping kaniko job. Image specified in API CRD.")
 	} else {
 		// check if the image already exists
-		imageExist, errImage := registry.IsImageExist(&r.client)
+		imageExist, errImage := registry.IsImageExist(&r.client, mgwDockerImage)
 		if errImage != nil {
 			reqLogger.Info("Error finding the MGW image in registry. Continue with creating Kaniko job",
 				"mgw_docker_image", mgwDockerImage)
@@ -530,7 +530,7 @@ func (r *ReconcileAPI) Reconcile(request reconcile.Request) (reconcile.Result, e
 			var kanikoJob *batchv1.Job
 			reqLogger.Info("Deploying the Kaniko job in cluster")
 			r.recorder.Event(instance, corev1.EventTypeNormal, "KanikoJob", "Deploying kaniko job.")
-			kanikoJob = kaniko.Job(instance, controlConfigData, kanikoArgs.Data[kanikoArguments], ownerRef)
+			kanikoJob = kaniko.Job(instance, controlConfigData, kanikoArgs.Data[kanikoArguments], ownerRef, mgwDockerImage)
 			if err := controllerutil.SetControllerReference(instance, kanikoJob, r.scheme); err != nil {
 				return reconcile.Result{}, err
 			}
@@ -571,6 +571,12 @@ func (r *ReconcileAPI) Reconcile(request reconcile.Request) (reconcile.Result, e
 					reqLogger.Info("Kaniko job is completed successfully", "job_status", kanikoJob.Status)
 					r.recorder.Event(instance, corev1.EventTypeNormal, "KanikoJob",
 						"Kaniko job completed successfully.")
+
+					//If Job is completed and we use special Push registry we must rewrite MGW image back to pull registry
+					if dockerPushRegistryConf != nil {
+						mgwDockerImage.RegistryType = registry.Type(dockerRegistryConf.Data[registryTypeConst])
+						mgwDockerImage.RepositoryName = dockerRegistryConf.Data[repositoryNameConst]
+					}
 				}
 			}
 		}
@@ -587,7 +593,7 @@ func (r *ReconcileAPI) Reconcile(request reconcile.Request) (reconcile.Result, e
 	if deployMgwRuntime {
 		reqLogger.Info("Deploying MGW runtime image")
 		// create MGW deployment in k8s cluster
-		mgwDeployment, errDeploy := mgw.Deployment(&r.client, instance, controlConfigData, ownerRef, sidecarContainers)
+		mgwDeployment, errDeploy := mgw.Deployment(&r.client, instance, controlConfigData, ownerRef, sidecarContainers, mgwDockerImage)
 		r.recorder.Event(instance, corev1.EventTypeNormal, "MGWRuntime",
 			fmt.Sprintf("Deploying MGW runtime: %s.", mgwDeployment.Name))
 		if errDeploy != nil {

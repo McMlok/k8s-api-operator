@@ -40,14 +40,14 @@ const (
 )
 
 // Job returns a kaniko job with mounted volumes
-func Job(api *wso2v1alpha1.API, controlConfigData map[string]string, kanikoArgs string, owner *[]metav1.OwnerReference) *batchv1.Job {
+func Job(api *wso2v1alpha1.API, controlConfigData map[string]string, kanikoArgs string, owner *[]metav1.OwnerReference, image registry.Image) *batchv1.Job {
 	rootUserVal := int64(0)
 	jobName := api.Name + "-kaniko"
 	if api.Spec.UpdateTimeStamp != "" {
 		jobName = jobName + "-" + api.Spec.UpdateTimeStamp
 	}
 
-	regConfig := registry.GetPushConfig()
+	regConfig := registry.GetImageConfig(image)
 	pushSecret := controlConfigData[imagePushSecretNameConst]
 	if pushSecret != "" {
 		regConfig.Volumes[0].VolumeSource.Secret.SecretName = pushSecret
