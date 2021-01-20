@@ -200,6 +200,10 @@ func (r *ReconcileAPI) Reconcile(request reconcile.Request) (reconcile.Result, e
 	kaniko.DocFileProp.ToolkitImage = controlConfigData[mgwToolkitImgConst]
 	kaniko.DocFileProp.RuntimeImage = controlConfigData[mgwRuntimeImgConst]
 
+	if controlConfigData[imagePullSecretNameConst] != "" {
+		registry.DockerPullSecretName = controlConfigData[imagePullSecretNameConst]
+	}
+
 	mgwDockerImage := registry.Image{}
 	registryTypeStr := dockerRegistryConf.Data[registryTypeConst]
 	if !registry.IsRegistryType(registryTypeStr) {
@@ -216,22 +220,6 @@ func (r *ReconcileAPI) Reconcile(request reconcile.Request) (reconcile.Result, e
 	if err != nil {
 		reqLogger.Error(err, "Invalid boolean value for importAPIEnabled")
 		return reconcile.Result{}, err
-	}
-
-	//optional get push docker registry configs
-	dockerPushRegistryConf := k8s.NewConfMap()
-	if controlConfigData[dockerPushRegName] != "" {
-		k8s.Get(&r.client, types.NamespacedName{Namespace: config.SystemNamespace, Name: controlConfigData[dockerPushRegName]},
-			dockerPushRegistryConf)
-
-		registryPushTypeStr := dockerPushRegistryConf.Data[registryTypeConst]
-		if !registry.IsRegistryType(registryPushTypeStr) {
-			reqLogger.Error(err, "Invalid push registry type. Requeue request after 10 seconds",
-				"registry-type", registryPushTypeStr)
-			// Registry type is invalid, user should update this with valid type.
-			// Return and requeue
-			return reconcile.Result{RequeueAfter: 10 * time.Second}, nil
-		}
 	}
 
 	//optional get push docker registry configs
